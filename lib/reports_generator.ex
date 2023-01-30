@@ -1,12 +1,13 @@
 defmodule ReportsGenerator do
+  alias ReportsGenerator.Parser
+
   def build(filename) do
     filename
-    |> ReportsGenerator.Parser.parse_file()
-    |> Enum.reduce(report_acc(), fn [id, _food_name, price], acc ->
-      Map.put(acc, id, acc[id] + price)
-    end)
+    |> Parser.parse_file()
+    |> Enum.reduce(report_acc(), fn line, acc -> sum_line(line, acc) end)
   end
 
+  defp sum_line([id, _food_name, price], acc), do: Map.put(acc, id, acc[id] + price)
   defp report_acc, do: Enum.into(1..30, %{}, &{Integer.to_string(&1), 0})
 end
 
