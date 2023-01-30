@@ -2,9 +2,9 @@ defmodule ReportsGenerator do
   def build(filename) do
     "reports/#{filename}"
     |> File.stream!()
-    |> Enum.reduce(%{}, fn line, acc ->
+    |> Enum.reduce(report_acc(), fn line, acc ->
       [id, _food_name, price] = parse_line(line)
-      Map.put(acc, id, price)
+      Map.put(acc, id, acc[id] + price)
     end)
   end
 
@@ -14,6 +14,8 @@ defmodule ReportsGenerator do
     |> String.split(",")
     |> List.update_at(2, &String.to_integer/1)
   end
+
+  defp report_acc, do: Enum.into(1..30, %{}, &{Integer.to_string(&1), 0})
 end
 
 # metodo de ler arquivo usando case
