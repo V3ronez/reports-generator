@@ -12,20 +12,32 @@ defmodule ReportsGenerator do
     "sushi"
   ]
 
+  @options ["users", "foods"]
+
   def build(filename) do
     filename
     |> Parser.parse_file()
     |> Enum.reduce(report_acc(), fn line, acc -> sum_line(line, acc) end)
   end
 
-  def fetch_higher_cost(report), do: Enum.max_by(report, fn {_key, value} -> value end)
+  def fetch_higher_cost(report, option) when option in @options do
+    {:ok, Enum.max_by(report[option], fn {_key, value} -> value end)}
+  end
+
+  def fetch_higher_cost(_report, _option), do: {:error, "invalid option"}
+
   def fetch_min_cost(report), do: Enum.min_by(report, fn {_key, value} -> value end)
 
   defp sum_line([id, food_name, price], %{"foods" => foods, "users" => users} = acc) do
     users = Map.put(users, id, users[id] + price)
     foods = Map.put(foods, food_name, foods[food_name] + 1)
 
-    %{acc | "users" => users, "foods" => foods} # atualizando o map acumulador
+    %{acc | "users" => users, "foods" => foods}
+    # atualizando o map acumulador
+
+    acc
+    |> Map.put("users", users)
+    |> Map.put("foods", foods)
   end
 
   def report_acc do
