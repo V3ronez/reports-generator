@@ -26,11 +26,18 @@ defmodule ReportsGenerator do
 
   def fetch_higher_cost(_report, _option), do: {:error, "invalid option"}
 
+  def build_report_async(list_files) when not is_list(list_files) do
+    {:error, "please provide a list of files"}
+  end
+
   def build_report_async(list_files) do
-    list_files
-    |> Task.async_stream(&build/1)
-    # |> Enum.map(& &1) // jeito curto de escrever uma funcao e passando um parametro
-    |> Enum.reduce(report_acc(), fn {:ok, result}, report -> sum_reports(report, result) end)
+    result =
+      list_files
+      |> Task.async_stream(&build/1)
+      # |> Enum.map(& &1) // jeito curto de escrever uma funcao e passando um parametro
+      |> Enum.reduce(report_acc(), fn {:ok, result}, report -> sum_reports(report, result) end)
+
+    {:ok, result}
   end
 
   def fetch_min_cost(report), do: Enum.min_by(report, fn {_key, value} -> value end)
